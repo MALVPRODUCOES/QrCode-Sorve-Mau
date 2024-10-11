@@ -6,56 +6,91 @@
     <title>QR Code Scanner com HTML5 QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <style>
-        #preview {
-            width: 850px;
-            height: 850px;
-            border: 1px solid black;
-            margin-bottom: 30px;
-        }
-        #result {
-            font-size: 30px;
-            font-weight: bold;
-        }
-        .valid { color: green; }
-        .invalid { color: red; }
-        /* Estilos para o botão */
-        #readAnother {
-            display: none; /* Mantém escondido até ser necessário */
-            margin-top: 30px;
-            padding: 10px 30px; /* Aumenta o espaço interno */
-            font-size: 20px; /* Aumenta o tamanho da fonte */
-            width: 200px; /* Define uma largura fixa */
-            height: 70px; /* Define uma altura fixa */
-            background-color: #4CAF50; /* Cor de fundo */
-            color: white; /* Cor do texto */
-            border: none; /* Remove borda padrão */
-            border-radius: 5px; /* Borda arredondada */
-            cursor: pointer; /* Muda o cursor para "pointer" */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
         }
 
-        /* Efeito ao passar o mouse no botão */
+        #preview {
+            width: 400px;
+            height: 400px;
+            position: relative;
+        }
+
+        #qr-reader {
+            position: relative;
+        }
+
+        /* Camada ofuscada */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Fundo escurecido */
+            z-index: 1;
+        }
+
+        /* Deixar o qrbox transparente */
+        #qrbox {
+            position: absolute;
+            top: 50px; /* Altere conforme necessário */
+            left: 50px; /* Altere conforme necessário */
+            width: 300px;
+            height: 300px;
+            border: 2px solid white;
+            background-color: rgba(255, 255, 255, 0.2); /* Translucidez */
+            z-index: 2;
+        }
+
+        #result {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        #readAnother {
+            display: none;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            width: 200px;
+            height: 50px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
         #readAnother:hover {
-            background-color: #45a049; /* Cor ao passar o mouse */
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
     <h1>Scanner de QR Code</h1>
-    <div id="preview"></div>
+    <div id="preview">
+        <!-- Adiciona o overlay escurecido -->
+        <div id="overlay"></div>
+        <!-- Caixa de leitura do QR Code -->
+        <div id="qrbox"></div>
+    </div>
     <div id="result"></div> <!-- Área para exibir as mensagens -->
-    <button id="readAnother">Ler Outro QR Code</button> <!-- Botão para ler outro QR Code -->
+    <button id="readAnother">Ler Outro QR Code</button>
 
     <script>
-        const MAX_LEITURAS = 4; // Número máximo de leituras por QR code
+        const MAX_LEITURAS = 4;
         const html5QrCode = new Html5Qrcode("preview");
 
-        // Verifica se o código já foi lido e quantas vezes
         function getCodeReadCount(code) {
             const readCounts = JSON.parse(localStorage.getItem('readCounts')) || {};
-            return readCounts[code] || 0; // Retorna 0 se o código ainda não foi lido
+            return readCounts[code] || 0;
         }
 
-        // Atualiza a contagem de leituras para o QR Code
         function updateCodeReadCount(code) {
             let readCounts = JSON.parse(localStorage.getItem('readCounts')) || {};
             readCounts[code] = getCodeReadCount(code) + 1;
@@ -63,12 +98,12 @@
         }
 
         function isCodeStillValid(code) {
-            return getCodeReadCount(code) < MAX_LEITURAS; // O código é válido até atingir 4 leituras
+            return getCodeReadCount(code) < MAX_LEITURAS;
         }
 
         function isInRange(code) {
             const number = parseInt(code, 10);
-            return number >= 100 && number <= 600; // Altere de acordo com a faixa válida
+            return number >= 100 && number <= 600;
         }
 
         function showMessage(message, isValid) {
@@ -79,17 +114,17 @@
 
         function startScanning() {
             html5QrCode.start(
-                { facingMode: "environment" }, 
-                { fps: 50, qrbox: 350 }, // Aumente o tamanho da área de leitura para 350x350
-                onScanSuccess, 
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 300 }, // O tamanho do qrbox é 300x300
+                onScanSuccess,
                 onScanFailure
             );
-            document.getElementById('readAnother').style.display = 'none'; // Esconde o botão quando o scanner está ativo
+            document.getElementById('readAnother').style.display = 'none';
         }
 
         function stopScanning() {
             html5QrCode.stop().then(() => {
-                document.getElementById('readAnother').style.display = 'block'; // Mostra o botão quando o scanner é parado
+                document.getElementById('readAnother').style.display = 'block';
             }).catch(err => {
                 console.error('Erro ao parar o scanner: ', err);
             });
@@ -98,7 +133,7 @@
         function onScanSuccess(decodedText, decodedResult) {
             if (isInRange(decodedText)) {
                 if (isCodeStillValid(decodedText)) {
-                    updateCodeReadCount(decodedText); // Incrementa a contagem de leituras
+                    updateCodeReadCount(decodedText);
                     const remaining = MAX_LEITURAS - getCodeReadCount(decodedText);
                     showMessage(`Ingresso Válido. Leituras restantes: ${remaining}`, true);
                 } else {
@@ -107,14 +142,13 @@
             } else {
                 showMessage('Ingresso Inválido: fora do intervalo válido', false);
             }
-            stopScanning(); // Para o scanner após uma leitura bem-sucedida
+            stopScanning();
         }
 
         function onScanFailure(error) {
             console.error('Erro de leitura do QR Code: ', error);
         }
 
-        // Inicializa o scanner
         Html5Qrcode.getCameras().then(devices => {
             if (devices && devices.length) {
                 startScanning();
@@ -127,9 +161,8 @@
             alert('Erro ao acessar a câmera: ' + err);
         });
 
-        // Configura o botão para ler outro QR Code
         document.getElementById('readAnother').addEventListener('click', function() {
-            startScanning(); // Reinicia o scanner
+            startScanning();
         });
     </script>
 </body>
