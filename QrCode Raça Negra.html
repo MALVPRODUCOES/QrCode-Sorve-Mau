@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leitura de QR Code com Limite de Leituras</title>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #qr-reader {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+
+        .qr-code {
+            color: green;
+        }
+
+        .qr-code.invalid {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Leitura de QR Code com Limite de Leituras</h1>
+    <div id="qr-reader"></div>
+    <div id="result">Aguardando QR code...</div>
+
+    <script>
+        const MAX_LEITURAS = 4; // Número máximo de leituras permitidas por QR code
+
+        // Função para salvar e verificar leituras no localStorage
+        function saveToLocalStorage(content) {
+            let qrCodes = JSON.parse(localStorage.getItem('qrCodes')) || {};
+            
+            // Verifica se o QR code já foi escaneado antes
+            if (qrCodes[content]) {
+                qrCodes[content] += 1;
+            } else {
+                qrCodes[content] = 1; // Primeira leitura
+            }
+
+            // Atualiza o localStorage
+            localStorage.setItem('qrCodes', JSON.stringify(qrCodes));
+
+            // Verifica se o QR code já foi lido o número máximo de vezes
+            if (qrCodes[content] <= MAX_LEITURAS) {
+                return true; // QR code ainda é válido
+            } else {
+                return false; // QR code já excedeu o limite de leituras
+            }
+        }
+
+        // Função de sucesso na leitura do QR code
+        function onScanSuccess(decodedText, decodedResult) {
+            let resultDiv = document.getElementById('result');
+            if (saveToLocalStorage(decodedText)) {
+                resultDiv.innerHTML = `Ingresso Válido. Leituras restantes: ${MAX_LEITURAS - JSON.parse(localStorage.getItem('qrCodes'))[decodedText]}`;
+                resultDiv.className = 'qr-code';
+            } else {
+                resultDiv.innerHTML = 'Ingresso Inválido (Máximo de leituras atingido)';
+                resultDiv.className = 'qr-code invalid';
+            }
+        }
+
+        // Função de erro na leitura do QR code
+        function onScanError(errorMessage) {
+            // Pode exibir um erro ou logar para debugging
+            console.warn('Erro na leitura do QR code: ', errorMessage);
+        }
+
+        // Inicializando a função html5-qrcode
+        let html5QrCode = new Html5Qrcode("qr-reader");
+        html5QrCode.start(
+            { facingMode: "environment" }, // Câmera traseira
+            {
+                fps: 10,    // Quadros por segundo
+                qrbox: 250  // Tamanho da área de leitura do QR code
+            },
+            onScanSuccess,
+            onScanError
+        ).catch(err => {
+            console.error("Erro ao iniciar o leitor de QR code", err);
+        });
+    </script>
+</body>
+</html>
