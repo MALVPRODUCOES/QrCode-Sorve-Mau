@@ -80,7 +80,7 @@
         function startScanning() {
             html5QrCode.start(
                 { facingMode: "environment" }, 
-                { fps: 10, qrbox: 350 }, // Aumente o tamanho da área de leitura para 350x350
+                { fps: 50, qrbox: 350 }, // Aumente o tamanho da área de leitura para 350x350
                 onScanSuccess, 
                 onScanFailure
             );
