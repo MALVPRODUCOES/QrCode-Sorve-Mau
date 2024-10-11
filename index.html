@@ -25,7 +25,7 @@
             padding: 10px 30px; /* Aumenta o espaço interno */
             font-size: 20px; /* Aumenta o tamanho da fonte */
             width: 200px; /* Define uma largura fixa */
-            height: 50px; /* Define uma altura fixa */
+            height: 70px; /* Define uma altura fixa */
             background-color: #4CAF50; /* Cor de fundo */
             color: white; /* Cor do texto */
             border: none; /* Remove borda padrão */
@@ -80,7 +80,7 @@
         function startScanning() {
             html5QrCode.start(
                 { facingMode: "environment" }, 
-                { fps: 10, qrbox: 750 }, // Aumente o tamanho da área de leitura para 750x750
+                { fps: 10, qrbox: 350 }, // Aumente o tamanho da área de leitura para 350x350
                 onScanSuccess, 
                 onScanFailure
             );
