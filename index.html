@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leitura de QR Code com Limite de Leituras</title>
+    <title>Leitor de QR Code</title>
     <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <style>
         body {
@@ -31,12 +31,19 @@
         .qr-code.invalid {
             color: red;
         }
+
+        .error {
+            color: red;
+            font-size: 18px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-    <h1>Leitura de QR Code com Limite de Leituras</h1>
+    <h1>Leitor de QR Code com Limite de Leituras</h1>
     <div id="qr-reader"></div>
     <div id="result">Aguardando QR code...</div>
+    <div id="camera-error" class="error"></div>
 
     <script>
         const MAX_LEITURAS = 4; // Número máximo de leituras permitidas por QR code
@@ -45,17 +52,14 @@
         function saveToLocalStorage(content) {
             let qrCodes = JSON.parse(localStorage.getItem('qrCodes')) || {};
             
-            // Verifica se o QR code já foi escaneado antes
             if (qrCodes[content]) {
                 qrCodes[content] += 1;
             } else {
                 qrCodes[content] = 1; // Primeira leitura
             }
 
-            // Atualiza o localStorage
             localStorage.setItem('qrCodes', JSON.stringify(qrCodes));
 
-            // Verifica se o QR code já foi lido o número máximo de vezes
             if (qrCodes[content] <= MAX_LEITURAS) {
                 return true; // QR code ainda é válido
             } else {
@@ -77,23 +81,30 @@
 
         // Função de erro na leitura do QR code
         function onScanError(errorMessage) {
-            // Pode exibir um erro ou logar para debugging
             console.warn('Erro na leitura do QR code: ', errorMessage);
         }
 
-        // Inicializando a função html5-qrcode
-        let html5QrCode = new Html5Qrcode("qr-reader");
-        html5QrCode.start(
-            { facingMode: "environment" }, // Câmera traseira
-            {
-                fps: 10,    // Quadros por segundo
-                qrbox: 250  // Tamanho da área de leitura do QR code
-            },
-            onScanSuccess,
-            onScanError
-        ).catch(err => {
-            console.error("Erro ao iniciar o leitor de QR code", err);
-        });
+        // Inicia o leitor de QR code e trata erros de câmera
+        function startQRScanner() {
+            const html5QrCode = new Html5Qrcode("qr-reader");
+            
+            // Tentar iniciar a câmera
+            html5QrCode.start(
+                { facingMode: "environment" }, // Usa a câmera traseira
+                {
+                    fps: 10,    // Quadros por segundo
+                    qrbox: 250  // Tamanho da área de leitura do QR code
+                },
+                onScanSuccess,
+                onScanError
+            ).catch(err => {
+                console.error("Erro ao iniciar a câmera: ", err);
+                document.getElementById('camera-error').innerHTML = "Erro ao acessar a câmera: " + err;
+            });
+        }
+
+        // Chamar a função para iniciar o leitor de QR code
+        document.addEventListener("DOMContentLoaded", startQRScanner);
     </script>
 </body>
 </html>
