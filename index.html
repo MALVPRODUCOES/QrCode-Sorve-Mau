@@ -7,8 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
     <style>
         #preview {
-            width: 300px;
-            height: 200px;
+            width: 400px;
+            height: 400px;
             border: 1px solid black;
             margin-bottom: 20px;
         }
@@ -63,7 +63,12 @@
         }
 
         function startScanning() {
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10 }, onScanSuccess, onScanFailure);
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: 350 }, // Aumente o tamanho da área de leitura para 350x350
+                onScanSuccess, 
+                onScanFailure
+            );
             document.getElementById('readAnother').style.display = 'none'; // Esconde o botão quando o scanner está ativo
         }
 
